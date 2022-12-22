@@ -19,7 +19,6 @@ package eu.cloudnetservice.modules.signs.platform.nukkit;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.level.Location;
-import cn.nukkit.math.SimpleAxisAlignedBB;
 import cn.nukkit.plugin.Plugin;
 import eu.cloudnetservice.modules.bridge.WorldPosition;
 import eu.cloudnetservice.modules.signs.Sign;
@@ -50,34 +49,6 @@ public class NukkitSignManagement extends PlatformSignManagement<Player, Locatio
 
   @Override
   protected void startKnockbackTask() {
-    Server.getInstance().getScheduler().scheduleDelayedRepeatingTask(this.plugin, () -> {
-      var entry = this.applicableSignConfigurationEntry();
-      if (entry != null) {
-        var conf = entry.knockbackConfiguration();
-        if (conf.validAndEnabled()) {
-          var distance = conf.distance();
-          // find all signs which need to knock back the player
-          for (var sign : this.platformSigns.values()) {
-            if (sign.needsUpdates() && sign.exists() && sign instanceof NukkitPlatformSign nukkitSign) {
-              var location = nukkitSign.signLocation();
-              if (location != null) {
-                var bb = new SimpleAxisAlignedBB(location, location).expand(distance, distance, distance);
-                for (var entity : location.getLevel().getNearbyEntities(bb)) {
-                  if (entity instanceof Player player
-                    && (conf.bypassPermission() == null || !player.hasPermission(conf.bypassPermission()))) {
-                    entity.setMotion(entity.getPosition()
-                      .subtract(location)
-                      .normalize()
-                      .multiply(conf.strength())
-                      .setY(0.2));
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }, 0, 5);
   }
 
   @Override
